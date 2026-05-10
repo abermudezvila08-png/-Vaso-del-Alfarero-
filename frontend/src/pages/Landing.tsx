@@ -29,16 +29,19 @@ export default function Landing() {
             y mesa en pocos pasos.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/menu" className="btn-primary text-lg">
+              Ver Menú y Pedir
+            </Link>
             {user ? (
-              <Link to="/reservar" className="btn-primary text-lg">
+              <Link to="/reservar" className="btn-secondary text-lg">
                 Hacer una Reservación
               </Link>
             ) : (
               <>
-                <Link to="/registro" className="btn-primary text-lg">
-                  Comenzar
+                <Link to="/registro" className="btn-secondary text-lg">
+                  Registrarse
                 </Link>
-                <Link to="/login" className="btn-secondary text-lg">
+                <Link to="/login" className="text-gray-400 hover:text-brand-gold text-lg transition">
                   Ya tengo cuenta
                 </Link>
               </>

@@ -171,6 +171,114 @@ async def calculate_inventory_alerts(
     return alerts
 
 
+# --- Advanced prediction: seasonality, holidays, day-of-week ---
+
+# Cuban holidays and special dates that affect restaurant demand
+CUBAN_HOLIDAYS = {
+    (1, 1): ("Año Nuevo", 0.4),
+    (1, 2): ("Día de la Victoria", 0.6),
+    (2, 14): ("San Valentín", 1.5),
+    (3, 8): ("Día de la Mujer", 1.3),
+    (5, 1): ("Día del Trabajo", 0.5),
+    (7, 25): ("Día de la Rebeldía", 0.6),
+    (7, 26): ("Día de la Rebeldía", 0.6),
+    (7, 27): ("Día de la Rebeldía", 0.7),
+    (10, 10): ("Día de la Independencia", 0.8),
+    (12, 25): ("Navidad", 1.4),
+    (12, 31): ("Fin de Año", 1.6),
+}
+
+# Day of week demand multipliers (Mon=0..Sun=6)
+DAY_OF_WEEK_MULTIPLIERS = {
+    0: 0.8,   # Lunes - bajo
+    1: 0.85,  # Martes
+    2: 0.9,   # Miércoles
+    3: 0.95,  # Jueves
+    4: 1.2,   # Viernes - alto
+    5: 1.4,   # Sábado - más alto
+    6: 1.1,   # Domingo
+}
+
+# Monthly seasonality (tourism/climate)
+MONTH_SEASONALITY = {
+    1: 1.3,   # Temporada alta turismo
+    2: 1.25,
+    3: 1.2,
+    4: 1.0,
+    5: 0.9,
+    6: 0.85,  # Temporada baja
+    7: 0.8,
+    8: 0.8,
+    9: 0.85,
+    10: 0.9,
+    11: 1.1,
+    12: 1.35,  # Navidad/Fin de Año
+}
+
+
+async def calculate_advanced_predictions(
+    db: AsyncSession,
+    lookback_days: int = 30,
+    forecast_days: int = 7,
+) -> list[dict]:
+    """Advanced prediction with seasonality, holidays, day-of-week factors."""
+    today = date.today()
+    start_date = today - timedelta(days=lookback_days)
+
+    base_predictions = await calculate_demand_predictions(db, lookback_days)
+
+    advanced = []
+    for pred in base_predictions:
+        base_daily = pred.avg_daily_sales
+
+        day_factors = []
+        holiday_effects = []
+        for d in range(forecast_days):
+            forecast_date = today + timedelta(days=d + 1)
+            dow = forecast_date.weekday()
+            day_factor = DAY_OF_WEEK_MULTIPLIERS.get(dow, 1.0)
+            month_factor = MONTH_SEASONALITY.get(forecast_date.month, 1.0)
+
+            holiday_key = (forecast_date.month, forecast_date.day)
+            holiday_factor = 1.0
+            holiday_name = None
+            if holiday_key in CUBAN_HOLIDAYS:
+                holiday_name, holiday_factor = CUBAN_HOLIDAYS[holiday_key]
+
+            combined = day_factor * month_factor * holiday_factor
+            day_factors.append(combined)
+            if holiday_name:
+                holiday_effects.append({
+                    "date": forecast_date.isoformat(),
+                    "holiday": holiday_name,
+                    "factor": holiday_factor,
+                })
+
+        avg_factor = sum(day_factors) / len(day_factors) if day_factors else 1.0
+        trend_mult = 1.0
+        if pred.trend == "up":
+            trend_mult = 1.1
+        elif pred.trend == "down":
+            trend_mult = 0.9
+
+        predicted_week = base_daily * forecast_days * avg_factor * trend_mult
+
+        advanced.append({
+            "recipe_name": pred.recipe_name,
+            "recipe_id": pred.recipe_id,
+            "base_avg_daily": pred.avg_daily_sales,
+            "predicted_week_basic": pred.predicted_next_week,
+            "predicted_week_advanced": round(predicted_week, 1),
+            "trend": pred.trend,
+            "confidence": pred.confidence,
+            "seasonality_factor": round(avg_factor, 2),
+            "holiday_effects": holiday_effects,
+            "factors_applied": ["day_of_week", "monthly_seasonality", "trend"],
+        })
+
+    return advanced
+
+
 async def generate_prediction_report(db: AsyncSession) -> PredictionReport:
     """Generate a comprehensive prediction report."""
     predictions = await calculate_demand_predictions(db)

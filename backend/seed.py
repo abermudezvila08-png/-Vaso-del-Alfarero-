@@ -205,19 +205,118 @@ async def seed_data(db: AsyncSession) -> None:
     recipe.total_cost = round(total_cost, 2)
     recipe.selling_price = round(total_cost * 1.30, 2)
 
+    # Additional recipes for a complete menu
+    extra_recipes = [
+        Recipe(
+            name="Ropa Vieja",
+            category="Plato principal",
+            description="Carne deshilachada en salsa criolla con arroz y frijoles",
+            servings=1, preparation_time_min=60, profit_margin=30.0,
+            ingredient_cost=3.20, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(3.20 + op_per_dish, 2),
+            selling_price=round((3.20 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Lechón Asado",
+            category="Plato principal",
+            description="Cerdo asado con mojo, yuca con mojo y ensalada",
+            servings=1, preparation_time_min=120, profit_margin=30.0,
+            ingredient_cost=4.00, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(4.00 + op_per_dish, 2),
+            selling_price=round((4.00 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Frijoles Negros",
+            category="Acompañamiento",
+            description="Frijoles negros guisados estilo cubano",
+            servings=1, preparation_time_min=30, profit_margin=30.0,
+            ingredient_cost=0.80, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(0.80 + op_per_dish, 2),
+            selling_price=round((0.80 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Tostones",
+            category="Acompañamiento",
+            description="Plátano verde frito y aplastado",
+            servings=1, preparation_time_min=15, profit_margin=30.0,
+            ingredient_cost=0.50, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(0.50 + op_per_dish, 2),
+            selling_price=round((0.50 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Mojito",
+            category="Bebida",
+            description="Cóctel cubano con ron, hierbabuena, limón y soda",
+            servings=1, preparation_time_min=5, profit_margin=30.0,
+            ingredient_cost=1.50, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(1.50 + op_per_dish, 2),
+            selling_price=round((1.50 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Flan de Caramelo",
+            category="Postre",
+            description="Flan cubano tradicional con caramelo",
+            servings=1, preparation_time_min=45, profit_margin=30.0,
+            ingredient_cost=0.70, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(0.70 + op_per_dish, 2),
+            selling_price=round((0.70 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Yuca con Mojo",
+            category="Acompañamiento",
+            description="Yuca hervida con salsa de ajo y naranja agria",
+            servings=1, preparation_time_min=25, profit_margin=30.0,
+            ingredient_cost=0.45, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(0.45 + op_per_dish, 2),
+            selling_price=round((0.45 + op_per_dish) * 1.30, 2),
+        ),
+        Recipe(
+            name="Ensalada Mixta",
+            category="Entrada",
+            description="Ensalada fresca con tomate, lechuga, pepino y aguacate",
+            servings=1, preparation_time_min=10, profit_margin=30.0,
+            ingredient_cost=0.60, operating_cost_share=round(op_per_dish, 2),
+            total_cost=round(0.60 + op_per_dish, 2),
+            selling_price=round((0.60 + op_per_dish) * 1.30, 2),
+        ),
+    ]
+    for r in extra_recipes:
+        db.add(r)
+    await db.flush()
+
+    # Sample supplier
+    from backend.suppliers import Supplier
+    supplier = Supplier(
+        name="Distribuidora Nacional de Alimentos",
+        contact_person="Carlos Rodríguez",
+        phone="+5352001234",
+        email="distribuidora@empresa.cu",
+        address="Calle 23 #456, Vedado, La Habana",
+        notes="Proveedor principal de carnes y granos",
+    )
+    db.add(supplier)
+
+    # Sample exchange rates
+    from backend.currency import ExchangeRate
+    from datetime import datetime
+    for code, rate in [("USD", 300.0), ("EUR", 330.0), ("MLC", 250.0), ("CAD", 220.0), ("MXN", 15.0), ("GBP", 380.0)]:
+        db.add(ExchangeRate(currency_code=code, rate_to_cup=rate, rate_date=today, updated_by="seed"))
+
     # Sample daily sales for predictions
     import random
+    all_recipes = [recipe] + extra_recipes
     for i in range(30):
         d = date.today() - __import__('datetime').timedelta(days=30 - i)
-        base = 15 + (i // 10) * 2  # slight upward trend
-        qty = max(1, base + random.randint(-5, 5))
-        ds = DailySales(
-            date=d,
-            recipe_id=recipe.id,
-            quantity_sold=qty,
-            revenue=qty * recipe.selling_price,
-            food_cost=qty * recipe.total_cost,
-        )
-        db.add(ds)
+        for r in all_recipes:
+            base = 15 + (i // 10) * 2 if r.category == "Plato principal" else 8 + (i // 10)
+            qty = max(1, base + random.randint(-5, 5))
+            ds = DailySales(
+                date=d,
+                recipe_id=r.id,
+                quantity_sold=qty,
+                revenue=qty * r.selling_price,
+                food_cost=qty * r.total_cost,
+            )
+            db.add(ds)
 
     await db.commit()

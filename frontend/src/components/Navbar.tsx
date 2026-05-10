@@ -34,6 +34,9 @@ export default function Navbar() {
               <>
                 {!isStaff && (
                   <>
+                    <Link to="/menu" className="text-gray-300 hover:text-brand-gold transition-colors">
+                      Menú
+                    </Link>
                     <Link to="/reservar" className="text-gray-300 hover:text-brand-gold transition-colors">
                       Reservar
                     </Link>
@@ -52,6 +55,11 @@ export default function Navbar() {
                     Administración
                   </Link>
                 )}
+                {user.role === 'admin' && (
+                  <Link to="/dashboard" className="text-gray-300 hover:text-brand-gold transition-colors">
+                    Dashboard
+                  </Link>
+                )}
                 {isStaff && (
                   <div className="relative">
                     <button onClick={() => setGestionOpen(!gestionOpen)} className="text-gray-300 hover:text-brand-gold transition-colors flex items-center gap-1">
@@ -62,7 +70,9 @@ export default function Navbar() {
                         <Link to="/inventario" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Inventario</Link>
                         <Link to="/recetas" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Recetas y Costos</Link>
                         <Link to="/normas" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Normas de Porciones</Link>
+                        <Link to="/mermas" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Mermas</Link>
                         {user.role === 'admin' && <Link to="/costos-operativos" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Costos Operativos</Link>}
+                        {user.role === 'admin' && <Link to="/proveedores" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Proveedores</Link>}
                         {user.role === 'admin' && <Link to="/predicciones" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Predicciones</Link>}
                       </div>
                     )}
@@ -104,6 +114,9 @@ export default function Navbar() {
               <p className="text-brand-gold-light text-sm font-medium">{user.name}</p>
               {!isStaff && (
                 <>
+                  <Link to="/menu" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold">
+                    Menú
+                  </Link>
                   <Link to="/reservar" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold">
                     Reservar
                   </Link>
@@ -122,6 +135,11 @@ export default function Navbar() {
                   Administración
                 </Link>
               )}
+              {user.role === 'admin' && (
+                <Link to="/dashboard" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold">
+                  Dashboard
+                </Link>
+              )}
               {isStaff && (
                 <>
                   <div className="border-t border-gray-800 pt-2 mt-2">
@@ -129,7 +147,9 @@ export default function Navbar() {
                     <Link to="/inventario" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Inventario</Link>
                     <Link to="/recetas" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Recetas y Costos</Link>
                     <Link to="/normas" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Normas de Porciones</Link>
+                    <Link to="/mermas" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Mermas</Link>
                     {user.role === 'admin' && <Link to="/costos-operativos" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Costos Operativos</Link>}
+                    {user.role === 'admin' && <Link to="/proveedores" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Proveedores</Link>}
                     {user.role === 'admin' && <Link to="/predicciones" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Predicciones</Link>}
                   </div>
                 </>
