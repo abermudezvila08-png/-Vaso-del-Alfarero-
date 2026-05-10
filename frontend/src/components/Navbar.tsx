@@ -1,12 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Menu, X, UtensilsCrossed } from 'lucide-react';
+import { LogOut, Menu, X, UtensilsCrossed, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [gestionOpen, setGestionOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -50,6 +51,22 @@ export default function Navbar() {
                   <Link to="/admin" className="text-gray-300 hover:text-brand-gold transition-colors">
                     Administración
                   </Link>
+                )}
+                {isStaff && (
+                  <div className="relative">
+                    <button onClick={() => setGestionOpen(!gestionOpen)} className="text-gray-300 hover:text-brand-gold transition-colors flex items-center gap-1">
+                      Gestión <ChevronDown className={`w-3 h-3 transition-transform ${gestionOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {gestionOpen && (
+                      <div className="absolute right-0 top-full mt-1 bg-brand-card border border-gray-700 rounded-lg py-1 min-w-[180px] shadow-xl z-50">
+                        <Link to="/inventario" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Inventario</Link>
+                        <Link to="/recetas" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Recetas y Costos</Link>
+                        <Link to="/normas" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Normas de Porciones</Link>
+                        {user.role === 'admin' && <Link to="/costos-operativos" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Costos Operativos</Link>}
+                        {user.role === 'admin' && <Link to="/predicciones" onClick={() => setGestionOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-brand-dark hover:text-brand-gold">Predicciones</Link>}
+                      </div>
+                    )}
+                  </div>
                 )}
                 <span className="text-gray-500 text-sm">|</span>
                 <span className="text-brand-gold-light text-sm">{user.name}</span>
@@ -104,6 +121,18 @@ export default function Navbar() {
                 <Link to="/admin" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold">
                   Administración
                 </Link>
+              )}
+              {isStaff && (
+                <>
+                  <div className="border-t border-gray-800 pt-2 mt-2">
+                    <p className="text-xs text-gray-600 mb-1">Gestión</p>
+                    <Link to="/inventario" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Inventario</Link>
+                    <Link to="/recetas" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Recetas y Costos</Link>
+                    <Link to="/normas" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Normas de Porciones</Link>
+                    {user.role === 'admin' && <Link to="/costos-operativos" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Costos Operativos</Link>}
+                    {user.role === 'admin' && <Link to="/predicciones" onClick={() => setOpen(false)} className="block text-gray-300 hover:text-brand-gold text-sm py-1">Predicciones</Link>}
+                  </div>
+                </>
               )}
               <button onClick={handleLogout} className="text-red-400 text-sm">
                 Cerrar Sesión

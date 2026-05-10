@@ -40,7 +40,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(user)
 
-    token = create_access_token({"sub": user.id, "role": user.role.value})
+    token = create_access_token({"sub": str(user.id), "role": user.role.value})
     return Token(access_token=token)
 
 
@@ -51,7 +51,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
-    token = create_access_token({"sub": user.id, "role": user.role.value})
+    token = create_access_token({"sub": str(user.id), "role": user.role.value})
     return Token(access_token=token)
 
 
@@ -68,7 +68,7 @@ async def staff_login(data: StaffLogin, db: AsyncSession = Depends(get_db)):
     if data.company_code != COMPANY_CODE:
         raise HTTPException(status_code=403, detail="Código de empresa inválido")
 
-    token = create_access_token({"sub": user.id, "role": user.role.value})
+    token = create_access_token({"sub": str(user.id), "role": user.role.value})
     return Token(access_token=token)
 
 

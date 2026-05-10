@@ -9,6 +9,11 @@ import ReservationFlow from './pages/ReservationFlow';
 import MyReservations from './pages/MyReservations';
 import StaffDashboard from './pages/StaffDashboard';
 import AdminPanel from './pages/AdminPanel';
+import InventoryManagement from './pages/InventoryManagement';
+import RecipeManagement from './pages/RecipeManagement';
+import NormsReference from './pages/NormsReference';
+import PredictionsPanel from './pages/PredictionsPanel';
+import OperatingCosts from './pages/OperatingCosts';
 
 export default function App() {
   return (
@@ -24,6 +29,11 @@ export default function App() {
             <Route path="/mis-reservaciones" element={<MyReservations />} />
             <Route path="/staff" element={<StaffDashboard />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/inventario" element={<InventoryManagement />} />
+            <Route path="/recetas" element={<RecipeManagement />} />
+            <Route path="/normas" element={<NormsReference />} />
+            <Route path="/predicciones" element={<PredictionsPanel />} />
+            <Route path="/costos-operativos" element={<OperatingCosts />} />
           </Route>
         </Routes>
       </AuthProvider>

@@ -1,12 +1,19 @@
-"""Seed the database with initial data: tables, time slots, packages, and admin user."""
+"""Seed the database with initial data."""
 
-from datetime import time
+from datetime import date, time
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.auth import hash_password
 from backend.models import LunchPackage, Table, TimeSlot, User, UserRole
+from backend.models_inventory import (
+    DailySales,
+    Ingredient,
+    OperatingCost,
+    Recipe,
+    RecipeIngredient,
+)
 
 
 async def seed_data(db: AsyncSession) -> None:
@@ -88,5 +95,129 @@ async def seed_data(db: AsyncSession) -> None:
     ]
     for p in packages:
         db.add(p)
+
+    # === Inventory seed data ===
+
+    # Sample ingredients with Cuban norms
+    ingredients = [
+        Ingredient(name="Huevo", category="Proteínas", unit="g",
+                   norm_cuban_g=50, norm_european_g=60, norm_asian_g=50,
+                   actual_portion_g=75, current_stock=5000, min_stock_alert=500,
+                   unit_cost=0.004, supplier="Granja Local",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Arroz", category="Carbohidratos", unit="g",
+                   norm_cuban_g=170, norm_european_g=150, norm_asian_g=200,
+                   actual_portion_g=170, current_stock=50000, min_stock_alert=5000,
+                   unit_cost=0.001, supplier="Distribuidora Nacional",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Pollo (pechuga)", category="Proteínas", unit="g",
+                   norm_cuban_g=150, norm_european_g=150, norm_asian_g=130,
+                   actual_portion_g=160, current_stock=15000, min_stock_alert=2000,
+                   unit_cost=0.008, supplier="Avícola Central",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Cerdo", category="Proteínas", unit="g",
+                   norm_cuban_g=200, norm_european_g=175, norm_asian_g=150,
+                   actual_portion_g=200, current_stock=12000, min_stock_alert=2000,
+                   unit_cost=0.007, supplier="Cárnica Provincial",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Frijoles negros", category="Carbohidratos", unit="g",
+                   norm_cuban_g=180, norm_european_g=150, norm_asian_g=150,
+                   actual_portion_g=180, current_stock=20000, min_stock_alert=3000,
+                   unit_cost=0.002, supplier="Distribuidora Nacional",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Aceite vegetal", category="Ingredientes", unit="ml",
+                   norm_cuban_g=15, norm_european_g=10, norm_asian_g=10,
+                   actual_portion_g=15, current_stock=10000, min_stock_alert=1000,
+                   unit_cost=0.003, supplier="Aceites del Caribe",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Cebolla", category="Ingredientes", unit="g",
+                   norm_cuban_g=30, norm_european_g=30, norm_asian_g=30,
+                   actual_portion_g=30, current_stock=8000, min_stock_alert=1000,
+                   unit_cost=0.002, supplier="Mercado Agropecuario",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Tomate", category="Vegetales", unit="g",
+                   norm_cuban_g=120, norm_european_g=120, norm_asian_g=100,
+                   actual_portion_g=120, current_stock=6000, min_stock_alert=1000,
+                   unit_cost=0.003, supplier="Mercado Agropecuario",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Yuca", category="Carbohidratos", unit="g",
+                   norm_cuban_g=180, norm_european_g=None, norm_asian_g=None,
+                   actual_portion_g=180, current_stock=10000, min_stock_alert=1500,
+                   unit_cost=0.001, supplier="Mercado Agropecuario",
+                   norm_source="NC (Norma Cubana)"),
+        Ingredient(name="Plátano maduro", category="Carbohidratos", unit="g",
+                   norm_cuban_g=120, norm_european_g=None, norm_asian_g=None,
+                   actual_portion_g=120, current_stock=4000, min_stock_alert=800,
+                   unit_cost=0.002, supplier="Mercado Agropecuario",
+                   norm_source="NC (Norma Cubana)"),
+    ]
+    for ing in ingredients:
+        db.add(ing)
+    await db.flush()
+
+    # Sample operating costs
+    today = date.today()
+    op_cost = OperatingCost(
+        month=today.month,
+        year=today.year,
+        water_cost=200.0,
+        electricity_cost=800.0,
+        gas_cost=300.0,
+        salary_cost=3000.0,
+        rent_cost=1500.0,
+        maintenance_cost=200.0,
+        other_costs=500.0,
+        notes="Costos operativos mensuales base",
+    )
+    db.add(op_cost)
+
+    # Sample recipe: Arroz con pollo
+    recipe = Recipe(
+        name="Arroz con Pollo",
+        category="Plato principal",
+        description="Arroz amarillo con pollo, pimientos y guisantes",
+        servings=1,
+        preparation_time_min=45,
+        profit_margin=30.0,
+    )
+    db.add(recipe)
+    await db.flush()
+
+    recipe_ings = [
+        RecipeIngredient(recipe_id=recipe.id, ingredient_id=ingredients[2].id,
+                         norm_quantity=150, actual_quantity=160, unit="g"),  # Pollo
+        RecipeIngredient(recipe_id=recipe.id, ingredient_id=ingredients[1].id,
+                         norm_quantity=170, actual_quantity=170, unit="g"),  # Arroz
+        RecipeIngredient(recipe_id=recipe.id, ingredient_id=ingredients[5].id,
+                         norm_quantity=15, actual_quantity=15, unit="ml"),  # Aceite
+        RecipeIngredient(recipe_id=recipe.id, ingredient_id=ingredients[6].id,
+                         norm_quantity=30, actual_quantity=30, unit="g"),  # Cebolla
+    ]
+    for ri in recipe_ings:
+        db.add(ri)
+
+    # Calculate recipe costs
+    total_ing = (160 * 0.008) + (170 * 0.001) + (15 * 0.003) + (30 * 0.002)
+    op_per_dish = op_cost.total / (30 * 30)
+    total_cost = total_ing + op_per_dish
+    recipe.ingredient_cost = round(total_ing, 2)
+    recipe.operating_cost_share = round(op_per_dish, 2)
+    recipe.total_cost = round(total_cost, 2)
+    recipe.selling_price = round(total_cost * 1.30, 2)
+
+    # Sample daily sales for predictions
+    import random
+    for i in range(30):
+        d = date.today() - __import__('datetime').timedelta(days=30 - i)
+        base = 15 + (i // 10) * 2  # slight upward trend
+        qty = max(1, base + random.randint(-5, 5))
+        ds = DailySales(
+            date=d,
+            recipe_id=recipe.id,
+            quantity_sold=qty,
+            revenue=qty * recipe.selling_price,
+            food_cost=qty * recipe.total_cost,
+        )
+        db.add(ds)
 
     await db.commit()
