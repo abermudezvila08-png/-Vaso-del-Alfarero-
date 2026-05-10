@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-brand-black text-white antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-orange hover:bg-brand-orange-light text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full bg-brand-dark border border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-colors placeholder-gray-500;
+  }
+
+  .card {
+    @apply bg-brand-card border border-gray-800 rounded-xl p-6 shadow-lg;
+  }
+
+  .gold-text {
+    @apply text-brand-gold;
+  }
+
+  .gold-border {
+    @apply border-brand-gold;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4a843;
+  border-radius: 4px;
+}
