@@ -1,10 +1,10 @@
-# Node.js
+__pycache__/
+*.py[cod]
+*.db
+.env
+.venv/
+venv/
 node_modules/
-npm-debug.log
-package-lock.json
-
-# Flutter
-.dart_tool/
-.packages
-.pub-cache/
-build/
+dist/
+.vite/
+*.egg-info/
